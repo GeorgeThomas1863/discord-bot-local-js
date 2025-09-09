@@ -1,0 +1,24 @@
+{
+  "name": "discord-bot-local",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GeorgeThomas1863/discord-bot-local-js.git"
+  },
+  "author": "George H. Thomas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GeorgeThomas1863/discord-bot-local-js/issues"
+  },
+  "homepage": "https://github.com/GeorgeThomas1863/discord-bot-local-js#readme",
+  "dependencies": {
+    "discord.js": "^14.22.1",
+    "nodemon": "^3.1.10"
+  }
+}
