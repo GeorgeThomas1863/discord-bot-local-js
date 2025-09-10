@@ -8,35 +8,25 @@ const client = new OpenAI({
 });
 
 //SET CORRECT ENDPOINT HERE
-export const sendToLocalStreamAPI = async (inputArray, inputObj) => {
+export const sendToLocalAPI = async (inputArray) => {
   const params = {
     model: "deepseek/deepseek-r1-0528-qwen3-8b",
     messages: inputArray,
-    stream: true,
     temperature: 0.5,
     top_p: 0.95,
-    max_tokens: 4000,
+    max_tokens: 10000,
+    stream: false, // no point in stream bc only 1 discord response
   };
 
   try {
-    const stream = await client.chat.completions.create(params);
+    const res = await client.chat.completions.create(params);
+    const msgLLM = res.choices[0].message.content;
 
-    let fullMsg = "";
-    for await (const chunk of stream) {
-      const msg = chunk.choices[0]?.delta?.content || "";
-      console.log("--------------------------------");
-      console.log(msg);
-      if (!msg) continue;
-      //write this shit here
-      await sendMsgChunk(msg, inputObj);
-      fullMsg += msg;
-    }
+    console.log("--------------------------------");
+    console.log("BOT MESSAGE");
+    console.log(msgLLM);
 
-    // const messageLLM = res.choices[0].message.content;
-    // console.log("AI MESSAGE");
-    // console.log(aiMessage);
-
-    return fullMsg;
+    return msgLLM;
   } catch (e) {
     console.error("OpenAI API Error:", e.message);
     if (e.status === 429) return "SAM ALTMAN WANT HIS MONEY (George didn't pay his API bill)";

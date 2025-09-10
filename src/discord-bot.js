@@ -1,5 +1,5 @@
 import CONFIG from "../config/config.js";
-import { sendToLocalStreamAPI, defineSystemPrompt } from "./api.js";
+import { sendToLocalAPI, defineSystemPrompt } from "./api.js";
 import { startTyping, stopTyping, fixUsername } from "./util.js";
 
 export const handleMessage = async (inputObj, client) => {
@@ -20,20 +20,13 @@ export const handleMessage = async (inputObj, client) => {
 
   try {
     const convoArray = await buildConvoArray(channel, client);
-    console.log("CONVO ARRAY");
-    console.log(convoArray);
+    //UNFUCK
+    // console.log("CONVO ARRAY");
+    // console.log(convoArray);
 
-    //return msg for tracking
-    const fullMsg = await sendToLocalStreamAPI(convoArray, inputObj);
+    const msgLLM = await sendToLocalAPI(convoArray);
 
-    console.log("--------------------------------");
-    console.log("FULL MSG");
-    console.log(fullMsg);
-
-    // console.log("AI MESSAGE");
-    // console.log(aiMessage);
-
-    // await sendChunkMessage(messageLLM, inputObj);
+    await sendMsgChunk(msgLLM, inputObj);
   } catch (error) {
     console.error("Error handling message:", error);
     await inputObj.reply("Sorry, I encountered an error processing your request.");
