@@ -91,6 +91,6 @@ export const sendMsgChunk = async (msg, inputObj) => {
 
   for (let i = 0; i < msg.length; i += CHUNK_SIZE_LIMIT) {
     const chunk = msg.substring(i, i + CHUNK_SIZE_LIMIT);
-    await inputObj.reply("!" + chunk);
+    await inputObj.reply(chunk);
   }
 };
