@@ -6,7 +6,7 @@ const client = new Client({
   intents: ["Guilds", "GuildMembers", "GuildMessages", "MessageContent"],
 });
 
-client.on("ready", () => {
+client.on("clientReady", () => {
   console.log(`${client.user.tag} is now online!`);
 });
 

@@ -1,24 +1,27 @@
 import CONFIG from "../config/config.js";
-import { sendToLocalStreamAPI } from "./api.js";
+import { sendToLocalStreamAPI, defineSystemPrompt } from "./api.js";
 import { startTyping, stopTyping, fixUsername } from "./util.js";
 
 export const handleMessage = async (inputObj, client) => {
   const { author, content, channelId, channel, mentions } = inputObj;
-  const { CHANNELS, PREFIX } = CONFIG;
+  const { CHANNELS, PREFIX2 } = CONFIG;
+
+  console.log("INPUT OBJECT");
+  console.log(inputObj);
 
   if (!CHANNELS.includes(channelId)) return null;
   if (author.bot) return null;
 
   const firstChar = content.trim().charAt(0);
   const botMention = mentions.users.has(client.user.id) || null;
-  if (firstChar !== PREFIX && !botMention) return null;
+  if (firstChar !== PREFIX2 && !botMention) return null;
 
   const typingInterval = startTyping(channel);
 
   try {
     const convoArray = await buildConvoArray(channel, client);
-    // console.log("CONVO ARRAY");
-    // console.log(convoArray);
+    console.log("CONVO ARRAY");
+    console.log(convoArray);
 
     //return msg for tracking
     const fullMsg = await sendToLocalStreamAPI(convoArray, inputObj);
@@ -33,17 +36,17 @@ export const handleMessage = async (inputObj, client) => {
     // await sendChunkMessage(messageLLM, inputObj);
   } catch (error) {
     console.error("Error handling message:", error);
-    await msgObj.reply("Sorry, I encountered an error processing your request.");
+    await inputObj.reply("Sorry, I encountered an error processing your request.");
   } finally {
     stopTyping(typingInterval);
   }
 };
 
 export const buildConvoArray = async (channel, client) => {
-  const { PREFIX, SYSTEM_PROMPT } = CONFIG;
+  const { PREFIX2 } = CONFIG;
 
   //set system prompt as first msg in array
-  const convoArray = [SYSTEM_PROMPT];
+  const convoArray = await defineSystemPrompt();
 
   const prevMessages = await channel.messages.fetch({ limit: 10 });
   const messagesArray = Array.from(prevMessages.values()).reverse();
@@ -52,7 +55,8 @@ export const buildConvoArray = async (channel, client) => {
     const messageObj = messagesArray[i];
     const { author, content } = messageObj;
 
-    if (author.id !== client.user.id && !content.startsWith(PREFIX)) continue;
+    //CHECK THIS IS RIGHT
+    if (author.id !== client.user.id && !content.startsWith(PREFIX2)) continue;
 
     const username = await fixUsername(author.username);
 

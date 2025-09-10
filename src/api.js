@@ -43,3 +43,15 @@ export const sendToLocalStreamAPI = async (inputArray, inputObj) => {
     throw new Error("Failed to get response from OpenAI");
   }
 };
+
+export const defineSystemPrompt = async () => {
+  const systemPrompt = [
+    {
+      role: "system",
+      content:
+        "You are a helpful, friendly, and clever assistant. Please provide a response to the following message or messages. Please review all of the content provided and respond with a detailed and CONCISE reply.",
+    },
+  ];
+
+  return systemPrompt;
+};
