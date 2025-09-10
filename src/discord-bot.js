@@ -3,27 +3,18 @@ import { sendToLocalAPI, defineSystemPrompt } from "./api.js";
 import { startTyping, stopTyping, fixUsername } from "./util.js";
 
 export const handleMessage = async (inputObj, client) => {
-  const { author, content, channelId, channel, mentions } = inputObj;
-  const { CHANNELS, PREFIX2 } = CONFIG;
+  const { channel } = inputObj;
 
-  console.log("INPUT OBJECT");
-  console.log(inputObj);
+  // console.log("INPUT OBJECT");
+  // console.log(inputObj);
 
-  if (!CHANNELS.includes(channelId)) return null;
-  if (author.bot) return null;
-
-  const firstChar = content.trim().charAt(0);
-  const botMention = mentions.users.has(client.user.id) || null;
-  if (firstChar !== PREFIX2 && !botMention) return null;
+  const msgIgnore = await checkMsgIgnore(inputObj, client);
+  if (msgIgnore) return null;
 
   const typingInterval = startTyping(channel);
 
   try {
     const convoArray = await buildConvoArray(channel, client);
-    //UNFUCK
-    // console.log("CONVO ARRAY");
-    // console.log(convoArray);
-
     const msgLLM = await sendToLocalAPI(convoArray);
 
     await sendMsgChunk(msgLLM, inputObj);
@@ -35,8 +26,24 @@ export const handleMessage = async (inputObj, client) => {
   }
 };
 
+//check if message should be ignored
+export const checkMsgIgnore = async (inputObj, client) => {
+  const { author, content, channelId, mentions } = inputObj;
+  const { CHANNELS, PREFIX2 } = CONFIG;
+
+  if (!CHANNELS.includes(channelId)) return null;
+  if (author.bot) return null;
+
+  const firstChar = content.trim().charAt(0);
+  const botMention = mentions.users.has(client.user.id) || null;
+  if (firstChar !== PREFIX2 && !botMention) return null;
+
+  //if all checks pass, return true
+  return true;
+};
+
 export const buildConvoArray = async (channel, client) => {
-  const { PREFIX2 } = CONFIG;
+  // const { PREFIX2 } = CONFIG;
 
   //set system prompt as first msg in array
   const convoArray = await defineSystemPrompt();
@@ -46,10 +53,17 @@ export const buildConvoArray = async (channel, client) => {
 
   for (let i = 0; i < messagesArray.length; i++) {
     const messageObj = messagesArray[i];
-    const { author, content } = messageObj;
+    const { author, content, createdTimestamp } = messageObj;
+
+    //time check
+    const timeCheck = Date.now() - 15 * 60 * 1000; // 15 min ago
+    if (createdTimestamp < timeCheck) continue;
+
+    // console.log("MESSAGE OBJECT");
+    // console.log(messageObj);
 
     //CHECK THIS IS RIGHT
-    if (author.id !== client.user.id && !content.startsWith(PREFIX2)) continue;
+    // if (author.id !== client.user.id && !content.startsWith(PREFIX2)) continue;
 
     const username = await fixUsername(author.username);
 
