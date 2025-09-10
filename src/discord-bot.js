@@ -1,5 +1,5 @@
 import CONFIG from "../config/config.js";
-import { sendToLocalAPI } from "./api.js";
+import { sendToLocalStreamAPI } from "./api.js";
 import { startTyping, stopTyping, fixUsername } from "./util.js";
 
 export const handleMessage = async (inputObj, client) => {
@@ -19,12 +19,18 @@ export const handleMessage = async (inputObj, client) => {
     const convoArray = await buildConvoArray(channel, client);
     // console.log("CONVO ARRAY");
     // console.log(convoArray);
-    const messageLLM = await sendToLocalAPI(convoArray);
+
+    //return msg for tracking
+    const fullMsg = await sendToLocalStreamAPI(convoArray, inputObj);
+
+    console.log("--------------------------------");
+    console.log("FULL MSG");
+    console.log(fullMsg);
 
     // console.log("AI MESSAGE");
     // console.log(aiMessage);
 
-    await sendChunkMessage(messageLLM, inputObj);
+    // await sendChunkMessage(messageLLM, inputObj);
   } catch (error) {
     console.error("Error handling message:", error);
     await msgObj.reply("Sorry, I encountered an error processing your request.");
@@ -65,11 +71,11 @@ export const buildConvoArray = async (channel, client) => {
 };
 
 //chunks the message into 2000 character chunks
-export const sendChunkMessage = async (messageLLM, inputObj) => {
+export const sendMsgChunk = async (msg, inputObj) => {
   const { CHUNK_SIZE_LIMIT } = CONFIG;
 
-  for (let i = 0; i < messageLLM.length; i += CHUNK_SIZE_LIMIT) {
-    const chunk = messageLLM.substring(i, i + CHUNK_SIZE_LIMIT);
+  for (let i = 0; i < msg.length; i += CHUNK_SIZE_LIMIT) {
+    const chunk = msg.substring(i, i + CHUNK_SIZE_LIMIT);
     await inputObj.reply(chunk);
   }
 };

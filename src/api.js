@@ -1,26 +1,42 @@
 import { OpenAI } from "openai";
-import { OPENAI_KEY } from "../config/bot.js";
+import { sendMsgChunk } from "./discord-bot.js";
 
 //NOT DONE
-const openai = new OpenAI({
-  baseURL: "http://127.0.0.1:1234",
-  apiKey: OPENAI_KEY,
+const client = new OpenAI({
+  baseURL: "http://127.0.0.1:1234/v1",
+  apiKey: "allahuakbar",
 });
 
 //SET CORRECT ENDPOINT HERE
-export const sendToLocalAPI = async (inputArray) => {
+export const sendToLocalStreamAPI = async (inputArray, inputObj) => {
   const params = {
-    model: "gpt-4",
+    model: "deepseek/deepseek-r1-0528-qwen3-8b",
     messages: inputArray,
+    stream: true,
+    temperature: 0.5,
+    top_p: 0.95,
+    max_tokens: 4000,
   };
 
   try {
-    const res = await openai.chat.completions.create(params);
-    const messageLLM = res.choices[0].message.content;
+    const stream = await client.chat.completions.create(params);
+
+    let fullMsg = "";
+    for await (const chunk of stream) {
+      const msg = chunk.choices[0]?.delta?.content || "";
+      console.log("--------------------------------");
+      console.log(msg);
+      if (!msg) continue;
+      //write this shit here
+      await sendMsgChunk(msg, inputObj);
+      fullMsg += msg;
+    }
+
+    // const messageLLM = res.choices[0].message.content;
     // console.log("AI MESSAGE");
     // console.log(aiMessage);
 
-    return messageLLM;
+    return fullMsg;
   } catch (e) {
     console.error("OpenAI API Error:", e.message);
     if (e.status === 429) return "SAM ALTMAN WANT HIS MONEY (George didn't pay his API bill)";
