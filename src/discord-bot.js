@@ -1,6 +1,6 @@
 import CONFIG from "../config/config.js";
-import { sendToLocalAPI, defineSystemPrompt } from "./api.js";
-import { startTyping, stopTyping, fixUsername } from "./util.js";
+import { sendToLocalAPI } from "./api.js";
+import { startTyping, stopTyping, fixUsername, defineSystemPrompt } from "./util.js";
 
 export const handleMessage = async (inputObj, client) => {
   const { channel } = inputObj;
